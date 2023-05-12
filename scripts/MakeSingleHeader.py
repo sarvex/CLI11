@@ -64,13 +64,13 @@ class HeaderGroups(dict):
             )
 
         for name, action, content in matches:
-            if action == "verbatim":
+            if action == "set":
+                self[name] = self.get(name, set()) | set(content.strip().splitlines())
+            elif action == "verbatim":
                 assert (
                     name not in self
                 ), "{name} read in more than once! Quitting.".format(name=name)
                 self[name] = content
-            elif action == "set":
-                self[name] = self.get(name, set()) | set(content.strip().splitlines())
             else:
                 raise RuntimeError("Action not understood, must be verbatim or set")
 
@@ -117,7 +117,7 @@ def make_header(output, main_header, files, tag, namespace, macro=None, version=
         print("Converting macros", before, "->", after)
         single_header.replace(before, after)
 
-    new_namespace = namespace + "::"
+    new_namespace = f"{namespace}::"
     single_header = re.sub(r"\bCLI::\b", new_namespace, single_header)
 
     if output is not None:
